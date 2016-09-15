@@ -32,4 +32,9 @@
   		<version>2.1.0</version>
   	</dependency>
   </dependencies>
+  <url>https://github.com/RIConeorg/API-AuthenticationClientLibrary-Java</url>
+  <organization>
+  	<name>RIC One</name>
+  	<url>http://www.ricone.org/</url>
+  </organization>
 </project>
