@@ -1,15 +1,14 @@
-/**
- * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version     1.0
- * @since       Sep 16, 2016
- * Filename		Endpoint.java
- */
 package riconeapi.models.authentication;
 
 import java.io.Serializable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+/**
+ * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
+ * @version     1.0
+ * @since       Sep 16, 2016
+ */
 public class Endpoint implements Serializable {
 	
 	private static final long serialVersionUID = 1L;

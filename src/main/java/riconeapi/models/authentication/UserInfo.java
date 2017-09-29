@@ -1,14 +1,13 @@
-/**
- * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version     1.0
- * @since       Sep 16, 2016
- * Filename		UserInfo.java
- */
 package riconeapi.models.authentication;
 
 import java.io.Serializable;
 import java.util.List;
 
+/**
+ * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
+ * @version     1.0
+ * @since       Sep 16, 2016
+ */
 public class UserInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;

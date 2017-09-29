@@ -1,14 +1,13 @@
-/**
- * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version     1.0
- * @since       Sep 16, 2016
- * @filename	DecodedToken.java
- */
 package riconeapi.models.authentication;
 
 import com.auth0.jwt.internal.org.apache.commons.codec.binary.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
+ * @version     1.0
+ * @since       Sep 16, 2016
+ */
 public class DecodedToken
 {
 	private String application_id;
