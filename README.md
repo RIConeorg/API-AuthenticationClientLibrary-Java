@@ -11,7 +11,7 @@ The RIC One Authentication Client Library was developed using Java JDK 7, Spring
 
 #### Basic Use
 ```java
-Authenticator auth = auth.getInstance(); 
+Authenticator auth = Authenticator.getInstance();
 auth.authenticate(authUrl, clientId, clientSecret);
 
 for(Endpoint e : auth.GetEndpoints())
