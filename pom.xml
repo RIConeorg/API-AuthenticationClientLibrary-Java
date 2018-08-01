@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.ricone.api</groupId>
     <artifactId>ricone-authentication</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <name>API-AuthenticationClientLibrary-Java</name>
     <description>Client library for the authentication portion of RIC One API</description>
     <url>https://github.com/RIConeorg/API-AuthenticationClientLibrary-Java</url>

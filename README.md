@@ -30,6 +30,12 @@ for(Endpoint e : auth.GetEndpoints())
 3. Download the Project
 
 ## Change Log
+### v1.2
+* Added new method to Authenticator that returns a single endpoint
+    ```java
+    Authenticator.getEndpoint(providerId)
+    ```
+
 ### v1.1
 * Added custom exception class for failed authentication - AuthenticationException.java
 * Modified Athenticator.java
