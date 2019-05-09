@@ -1,8 +1,8 @@
 
-Copyright © 2014-2017 New York State Education Department. All rights reserved.
+Copyright © 2014-2019 New York State Education Department. All rights reserved.
 
 # RIC One API Java Authentication Client Library
-The RIC One Authentication Client Library was developed using Java JDK 7, Spring’s RestTemplate
+The RIC One Authentication Client Library was developed using Java JDK 8, Spring’s RestTemplate
 (http://projects.spring.io/spring-framework/), and FasterXML Jackson (http://wiki.fasterxml.com/JacksonHome).
 
 ### Features
@@ -30,6 +30,19 @@ for(Endpoint e : auth.GetEndpoints())
 3. Download the Project
 
 ## Change Log
+### v1.3.0
+* Updated project to build in Java 8.
+* Updated dependency Jars.
+    * Jackson Annotations, Core, and Databind - v2.9.8
+    * Spring Beans, Core, and Web - v5.1.5
+* Added the following dependencies
+    * Apache Commons Codec - v1.12
+    * Spring Commons Logging Bridge - v5.1.5
+* Removed the following dependencies
+    * Java JWT - using Apache Commons Codec
+    * Joda Time - using Java 8 time library
+    * Commons Logging - using Spring Commons Logging Bridge
+
 ### v1.2
 * Added new method to Authenticator that returns a single endpoint
     ```java

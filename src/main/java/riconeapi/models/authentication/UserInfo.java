@@ -1,59 +1,56 @@
 package riconeapi.models.authentication;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.List;
 
 /**
- * @author      Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version     1.0
- * @since       Sep 16, 2016
+ * @author Andrew Pieniezny <andrew.pieniezny@neric.org>
+ * @version 1.3.0
+ * @since 5/7/2019
  */
+@SuppressWarnings("unused")
 public class UserInfo implements Serializable {
 
-	private static final long serialVersionUID = 1L;
-	
-	private String id;
-	private String user_name;
-	private String token;
-	private List<Endpoint> endpoint;
-	
-	public String getId()
-	{
-		return id;
-	}
+    private static final long serialVersionUID = 1L;
 
-	public void setId(String id)
-	{
-		this.id = id;
-	}
+    private String id;
+    private String username;
+    private String token;
+    private List<Endpoint> endpoint;
 
-	public String getUser_name()
-	{
-		return user_name;
-	}
+    /**
+     * Get the universally unique identifier.
+     * @return UUID of type String.
+     */
+    @JsonProperty("id")
+    public String getId() {
+        return id;
+    }
 
-	public void setUser_name(String user_name)
-	{
-		this.user_name = user_name;
-	}
+    /**
+     * Get the application user name.
+     * @return User name of type String.
+     */
+    @JsonProperty("user_name")
+    public String getUsername() {
+        return username;
+    }
 
-	public String getToken()
-	{
-		return token;
-	}
+    /**
+     * Get the bearer token for API authentication.
+     * @return Token of type String.
+     */
+    @JsonProperty("token")
+    public String getToken() { return token; }
 
-	public void setToken(String token)
-	{
-		this.token = token;
-	}
-
-	public List<Endpoint> getEndpoint()
-	{
-		return endpoint;
-	}
-
-	public void setEndpoint(List<Endpoint> endpoint)
-	{
-		this.endpoint = endpoint;
-	}
+    /**
+     * Get all endpoints.
+     * @return A list of endpoint of type List.
+     */
+    @JsonProperty("endpoint")
+    public List<Endpoint> getEndpoint() {
+        return endpoint;
+    }
 }
