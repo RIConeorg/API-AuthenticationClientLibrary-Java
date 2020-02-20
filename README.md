@@ -30,6 +30,9 @@ for(Endpoint e : auth.GetEndpoints())
 3. Download the Project
 
 ## Change Log
+### v1.3.1
+* Updated Authenticator to better handle token expiration.
+
 ### v1.3.0
 * Updated project to build in Java 8.
 * Updated dependency Jars.

@@ -18,8 +18,8 @@ import java.util.Objects;
 
 /**
  * @author Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version 1.3.0
- * @since 5/7/2019
+ * @version 1.3.1
+ * @since 2/20/2020
  */
 @SuppressWarnings("unused")
 /**
@@ -100,8 +100,7 @@ public class Authenticator {
     public void refreshToken(String token) throws AuthenticationException {
         DecodedToken decoded = new DecodedToken(token);
         LocalDateTime dt = LocalDateTime.ofInstant(Instant.ofEpochMilli(decoded.getDecodedToken().getExp() * 1000), ZoneId.systemDefault());
-
-        if(dt.isBefore(LocalDateTime.now())) {
+        if(LocalDateTime.now().isAfter(dt.minusMinutes(10))) {
             Authenticator.getInstance().login(authUrl, clientId, clientSecret);
         }
     }
