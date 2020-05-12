@@ -5,40 +5,40 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import riconeapi.exceptions.AuthenticationException;
-import riconeapi.models.authentication.DecodedToken;
-import riconeapi.models.authentication.Endpoint;
-import riconeapi.models.authentication.UserInfo;
+import riconeapi.models.authentication.oneroster.OneRosterAuthResponse;
+import riconeapi.models.authentication.oneroster.OneRosterDecodedToken;
+import riconeapi.models.authentication.oneroster.OneRosterEndpoint;
+import riconeapi.models.authentication.xpress.XPressDecodedToken;
+import riconeapi.models.authentication.xpress.XPressEndpoint;
+import riconeapi.models.authentication.xpress.XPressAuthResponse;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version 1.3.1
- * @since 2/20/2020
+ * @version 2.0.0
+ * @since 4/10/2020
  */
-@SuppressWarnings("unused")
-/**
- * Handles authentication for user to Authentication server. Included methods return user and provider information necessary to
- * access the data API (i.e. token and url).
+
+/*
+  Handles authentication for user to Authentication server. Included methods return user and provider information necessary to
+  access the data API (i.e. token and url).
  */
 public class Authenticator {
+    private RestTemplate restTemplate;
     private static Authenticator instance = null;
-    private static ResponseEntity<UserInfo> user = null;
-    private static String authUrl;
-    private static String clientId;
-    private static String clientSecret;
+    private String authUrl;
+    private String clientId;
+    private String clientSecret;
+    private SpecEnum specFlag;
+    private List<Endpoint> endpoints = new ArrayList<>();
 
     private Authenticator() {
+        restTemplate = new RestTemplate();
     }
 
     /**
      * Singleton instantiation.
-     *
      * @return Authenticator singleton.
      */
     public static Authenticator getInstance() {
@@ -49,31 +49,53 @@ public class Authenticator {
     }
 
     /**
-     * Establish connection to authenticate to authentication server.
-     *
+     * Establish connection to authenticate to xPress or OneRoster authentication server.
      * @param authUrl      The authentication server url.
      * @param clientId     The clientId for the application.
      * @param clientSecret The clientSecret for the application.
      * @throws AuthenticationException If login does not succeed.
      */
     public void authenticate(String authUrl, String clientId, String clientSecret) throws AuthenticationException {
-        Authenticator.authUrl = authUrl;
-        Authenticator.clientId = clientId;
-        Authenticator.clientSecret = clientSecret;
-        login(authUrl, clientId, clientSecret);
+        this.authUrl = authUrl;
+        this.clientId = clientId;
+        this.clientSecret = clientSecret;
+
+        endpoints.clear();
+
+        if(this.authUrl.endsWith("/oauth/login")) {
+            this.specFlag = SpecEnum.ONEROSTER;
+            oneRosterLogin(authUrl, clientId, clientSecret);
+        }
+        else if(this.authUrl.endsWith("/login")) {
+            this.specFlag = SpecEnum.XPRESS;
+            xPressLogin(authUrl, clientId, clientSecret);
+        }
     }
 
     /**
-     * POST to authentication server with provided credentials.
-     *
+     * Re-authenticates with xPress or OneRoster authentication server if token is expired.
+     * @throws AuthenticationException If login does not succeed.
+     */
+    void refreshToken() throws AuthenticationException {
+        if(specFlag.equals(SpecEnum.XPRESS)) {
+            endpoints.clear();
+            xPressLogin(authUrl, clientId, clientSecret);
+        }
+        else if(specFlag.equals(SpecEnum.ONEROSTER)) {
+            endpoints.clear();
+            oneRosterLogin(authUrl, clientId, clientSecret);
+        }
+    }
+
+    /**
+     * POST to xPress authentication server with provided credentials.
      * @param authUrl      The authentication server url.
      * @param clientId     The clientId for the application.
      * @param clientSecret The clientSecret for the application.
+     * @return A list of type Endpoint.
      * @throws AuthenticationException If login does not succeed.
      */
-    private void login(String authUrl, String clientId, String clientSecret) throws AuthenticationException {
-        RestTemplate rt = new RestTemplate();
-
+    private List<Endpoint> xPressLogin(String authUrl, String clientId, String clientSecret) throws AuthenticationException {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("username", clientId);
         body.add("password", clientSecret);
@@ -84,98 +106,88 @@ public class Authenticator {
         HttpEntity<?> entity = new HttpEntity<Object>(body, headers);
 
         try {
-            Authenticator.user = rt.exchange(authUrl, HttpMethod.POST, entity, UserInfo.class);
+            ResponseEntity<XPressAuthResponse> user = restTemplate.exchange(authUrl, HttpMethod.POST, entity, XPressAuthResponse.class);
+            if(user.hasBody()) {
+                for(XPressEndpoint endpoint : user.getBody().getEndpoint()) {
+                    DecodedToken decodedToken = TokenDecoder.getDecodedToken(TokenDecoder.decodeToken(endpoint.getToken(), XPressDecodedToken.class), endpoint.getToken());
+                    endpoints.add(new Endpoint(endpoint, decodedToken));
+                }
+            }
         }
         catch(Exception e) {
             throw new AuthenticationException("401 UNAUTHORIZED", e, true, true);
         }
+        return endpoints;
     }
 
     /**
-     * Re-authenticates with authentication server if token is expired.
-     *
-     * @param token The token to be validated.
+     * POST to OneRoster authentication server with provided credentials.
+     * @param authUrl      The authentication server url.
+     * @param clientId     The clientId for the application.
+     * @param clientSecret The clientSecret for the application.
+     * @return A list of type Endpoint.
      * @throws AuthenticationException If login does not succeed.
      */
-    public void refreshToken(String token) throws AuthenticationException {
-        DecodedToken decoded = new DecodedToken(token);
-        LocalDateTime dt = LocalDateTime.ofInstant(Instant.ofEpochMilli(decoded.getDecodedToken().getExp() * 1000), ZoneId.systemDefault());
-        if(LocalDateTime.now().isAfter(dt.minusMinutes(10))) {
-            Authenticator.getInstance().login(authUrl, clientId, clientSecret);
+    private List<Endpoint> oneRosterLogin(String authUrl, String clientId, String clientSecret) throws AuthenticationException {
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("grant_type", "client_credentials");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        headers.set("Authorization", "Basic " + Base64.getEncoder().encodeToString((clientId + ":" + clientSecret).getBytes()));
+
+        HttpEntity<?> entity = new HttpEntity<Object>(body, headers);
+        try {
+            ResponseEntity<OneRosterAuthResponse> user = restTemplate.exchange(authUrl, HttpMethod.POST, entity, OneRosterAuthResponse.class);
+            if(user.hasBody()) {
+                for(OneRosterEndpoint endpoint : user.getBody().getEndpoint()) {
+                    DecodedToken decodedToken = TokenDecoder.getDecodedToken(TokenDecoder.decodeToken(endpoint.getAccessToken(), OneRosterDecodedToken.class), endpoint.getAccessToken());
+                    endpoints.add(new Endpoint(endpoint, decodedToken));
+                }
+            }
         }
+        catch(Exception e) {
+            throw new AuthenticationException("401 UNAUTHORIZED", e, true, true);
+        }
+        return endpoints;
     }
 
     /**
-     * Retrieve an application's token.
-     *
-     * @return Token value of type String.
+     * Retrieve a provider's token.
+     * @param providerId The providerId to be returned.
+     * @return String type.
      */
-    public String getToken() {
-        return Objects.requireNonNull(user.getBody()).getToken();
+    public String getToken(String providerId) {
+//        return Objects.requireNonNull(user.getBody()).getToken();
+        if(endpoints != null) {
+           Optional<Endpoint> e = getEndpoints(providerId);
+           if(e.isPresent()) {
+               return e.get().getToken();
+           }
+        }
+        return null;
     }
 
     /**
      * Details of a specific endpoint by providerId.
-     *
-     * @param providerId the providerId to be returned.
-     * @return A list of type Endpoint.
+     * @param providerId The providerId to be returned.
+     * @return Optional of type Endpoint.
      */
-    public List<Endpoint> getEndpoints(String providerId) {
-        ArrayList<Endpoint> endpoints = new ArrayList<>();
-
-        for(Endpoint e : Objects.requireNonNull(user.getBody()).getEndpoint()) {
-            if(e.getProviderId().equals(providerId)) {
-                endpoints.add(e);
-            }
+    public Optional<Endpoint> getEndpoints(String providerId) {
+        if(endpoints != null) {
+            return endpoints.stream().filter(endpoint -> endpoint.getProviderId().equalsIgnoreCase(providerId)).findFirst();
         }
-        return endpoints;
+        return Optional.empty();
     }
 
     /**
      * A list of all endpoints an application is associated with and it's details.
-     *
-     * @return A list of type Endpoint.
+     * @return List of type Endpoint.
      */
     public List<Endpoint> getEndpoints() {
-        return Objects.requireNonNull(user.getBody()).getEndpoint();
-    }
-
-    /**
-     * Details of a single endpoint if returnAllEndpoints set to false. If returnAllEndpoints is true,
-     * details of all endpoints associated to application are returned.
-     *
-     * @param providerId         The providerId to be returned.
-     * @param returnAllEndpoints All endpoints the application is associated with.
-     * @return A list of type Endpoint if Boolean set to true otherwise a single endpoint.
-     */
-    public List<Endpoint> getEndpoints(String providerId, Boolean returnAllEndpoints) {
-        ArrayList<Endpoint> endpoints = new ArrayList<>();
-
-        for(Endpoint e : Objects.requireNonNull(user.getBody()).getEndpoint()) {
-            if(returnAllEndpoints) {
-                endpoints.add(e);
-            }
-            else if(e.getProviderId().equals(providerId)) {
-                endpoints.add(e);
-            }
+        if(endpoints != null) {
+            return endpoints;
         }
-        return endpoints;
-    }
-
-    /**
-     * A single endpoint an application is associated with and it's details.
-     *
-     * @param providerId The providerId to be returned.
-     * @return A single Endpoint type.
-     */
-    public Endpoint getEndpoint(String providerId) {
-        Endpoint endpoint = null;
-
-        for(Endpoint e : Objects.requireNonNull(user.getBody()).getEndpoint()) {
-            if(e.getProviderId().equalsIgnoreCase(providerId)) {
-                endpoint = e;
-            }
-        }
-        return endpoint;
+        return new ArrayList<>();
     }
 }

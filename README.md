@@ -30,6 +30,20 @@ for(Endpoint e : auth.GetEndpoints())
 3. Download the Project
 
 ## Change Log
+### v2.0.0
+* The getToken() method now requires you to specify a providerId.
+* Removed the following methods from Authenticator
+    * List<EndPoint> getEndpoints(String providerId, Boolean returnAllEndpoints)
+    * Endpoint getEndpoint(String providerId)
+* Moved getDecodedToken from DecodedToken class to Endpoint class.
+* Dependencies
+    * Updated
+        * Apache Commons Codec - v1.14
+        * Jackson Annotations, Core, and Databind - v2.11.0
+        * Spring Beans, Core, and Web - v5.2.6
+    * New
+        * Java JWT - 3.10.2 
+
 ### v1.3.1
 * Updated Authenticator to better handle token expiration.
 
@@ -37,7 +51,7 @@ for(Endpoint e : auth.GetEndpoints())
 * Updated project to build in Java 8.
 * Updated dependency Jars.
     * Jackson Annotations, Core, and Databind - v2.9.8
-    * Spring Beans, Core, and Web - v5.1.5
+    * Spring Beans, Core, Jcl, and Web - v5.1.5
 * Added the following dependencies
     * Apache Commons Codec - v1.12
     * Spring Commons Logging Bridge - v5.1.5

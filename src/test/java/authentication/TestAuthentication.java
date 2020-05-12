@@ -1,9 +1,10 @@
 package authentication;
 
 import riconeapi.authentication.Authenticator;
+import riconeapi.authentication.Endpoint;
 import riconeapi.exceptions.AuthenticationException;
-import riconeapi.models.authentication.DecodedToken;
-import riconeapi.models.authentication.Endpoint;
+
+import java.util.Optional;
 
 /**
  * @author Andrew Pieniezny <andrew.pieniezny@neric.org>
@@ -11,63 +12,60 @@ import riconeapi.models.authentication.Endpoint;
  * @since Sep 19, 2017
  */
 public class TestAuthentication {
-    public static void main(String[] args) throws AuthenticationException {
-        String authUrl = "https://auth.test.ricone.org/login";
-        String clientId = "dpaDemo";
-        String clientSecret = "deecd889bff5ed0101a86680752f5f9";
-        String providerId = "sandbox";
+    private static final String authUrl = "https://auth.test.ricone.org/login";
+//    private static final String authUrl = "https://auth.test.ricone.org/oauth/login";
+    private static final String clientId = "dpaDemo";
+    private static final String clientSecret = "deecd889bff5ed0101a86680752f5f9";
+    private static final String providerId = "sandbox";
 
+    public static void main(String[] args) throws AuthenticationException, InterruptedException {
         Authenticator auth = Authenticator.getInstance();
         auth.authenticate(authUrl, clientId, clientSecret);
 
-        // Specified endpoint and return all endpoints
-        System.out.println("#### Specified endpoint and return all endpoints - false ####");
-        for(Endpoint e : auth.getEndpoints("sandbox", false)) {
-            System.out.println("name: " + e.getName());
-            System.out.println("href: " + e.getHref());
-            System.out.println("provider_id: " + e.getProviderId());
-            System.out.println("token: " + e.getToken());
-        }
-
-        // Specified endpoint and return all endpoints
-        System.out.println("#### Specified endpoint and return all endpoints - true ####");
-        for(Endpoint e : auth.getEndpoints("sandbox", true)) {
-            System.out.println("name: " + e.getName());
-            System.out.println("href: " + e.getHref());
-            System.out.println("provider_id: " + e.getProviderId());
-            System.out.println("token: " + e.getToken());
-        }
-
         // Get all endpoint info
-        System.out.println("#### Get all endpoint info ####");
-        for(Endpoint e : auth.getEndpoints()) {
-            System.out.println("name: " + e.getName());
-            System.out.println("href: " + e.getHref());
-            System.out.println("provider_id: " + e.getProviderId());
-            System.out.println("token: " + e.getToken());
-        }
+        getAllEndpoints(auth);
 
         // Get endpoint info by specific provider
-        System.out.println("#### Get endpoint info by specific provider ####");
-        for(Endpoint e : auth.getEndpoints(providerId)) {
-            System.out.println("name: " + e.getName());
-            System.out.println("href: " + e.getHref());
-            System.out.println("provider_id: " + e.getProviderId());
-            System.out.println("token: " + e.getToken());
-        }
+//        getSingleEndpoint(auth, providerId);
 
         // Get token
-        System.out.println("#### Get token ####");
-        System.out.println("token: " + auth.getToken());
+//        getToken(auth, providerId);
 
         // Decoded token info
-        System.out.println("#### Decoded token info ####");
-        DecodedToken dt = new DecodedToken("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhcHBsaWNhdGlvbl9pZCI6ImRwYURlbW8iLCJpYXQiOjE1NTY3MzQzOTMsImV4cCI6MTU1NjczNzk5MywiaXNzIjoiaHR0cDovL2F1dGgucmljb25lLm9yZy8ifQ.N_qov09iAds-bk9Liy8rsYteRNugq_2tbA02E0zFY7s");
-        System.out.println("application_id: " + dt.getDecodedToken().getApplication_id());
-        System.out.println("iat: " + dt.getDecodedToken().getIat());
-        System.out.println("exp: " + dt.getDecodedToken().getExp());
-        System.out.println("iss: " + dt.getDecodedToken().getIss());
+//        getDecodedToken(auth, providerId);
 
+//        getRefreshToken(auth);
     }
 
+    private static void getAllEndpoints(Authenticator authenticator) {
+        System.out.println("#### Get all endpoint info ####");
+        for(Endpoint e : authenticator.getEndpoints()) {
+            System.out.println("name: " + e.getName() + " | href: " + e.getHref() + " | provider_id: " + e.getProviderId() + " | token: " + e.getToken());
+        }
+    }
+
+    private static void getSingleEndpoint(Authenticator authenticator, String providerId) {
+        System.out.println("#### Get endpoint info by specific provider ####");
+        Optional<Endpoint> e = authenticator.getEndpoints(providerId);
+        e.ifPresent(endpoint -> System.out.println("name: " + endpoint.getName() + " | href: " + endpoint.getHref() + " | provider_id: " + endpoint.getProviderId() + " | token: " + endpoint.getToken()));
+    }
+
+    private static void getToken(Authenticator authenticator, String providerId) {
+        System.out.println("#### Get token ####");
+        System.out.println("token: " + authenticator.getToken(providerId));
+    }
+
+    private static void getDecodedToken(Authenticator authenticator, String providerId) {
+        for(Endpoint e : authenticator.getEndpoints()) {
+            System.out.println("" + e.getDecodedToken().getApplicationId() + " | " + e.getDecodedToken().getIat() + " | " + e.getDecodedToken().getExp() + " | " + e.getDecodedToken().getIss() + " | " + e.getProviderId() + " | " + e.getToken());
+        }
+    }
+
+//    private static void getRefreshToken(Authenticator authenticator) throws AuthenticationException, InterruptedException {
+//        getDecodedToken(authenticator, providerId);
+//        Thread.sleep(120000);
+//        authenticator.refreshToken();
+//        System.out.println("REFRESHED=========================================================");
+//        getDecodedToken(authenticator, providerId);
+//    }
 }

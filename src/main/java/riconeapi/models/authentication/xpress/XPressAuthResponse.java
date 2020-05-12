@@ -1,4 +1,4 @@
-package riconeapi.models.authentication;
+package riconeapi.models.authentication.xpress;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -7,22 +7,24 @@ import java.util.List;
 
 /**
  * @author Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version 1.3.0
- * @since 5/7/2019
+ * @version 2.0.0
+ * @since 4/7/2019
  */
 @SuppressWarnings("unused")
-public class UserInfo implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
+public class XPressAuthResponse implements Serializable {
+    private static final long serialVersionUID = -1464166513365070769L;
+    @JsonProperty("id")
     private String id;
+    @JsonProperty("user_name")
     private String username;
+    @JsonProperty("token")
     private String token;
-    private List<Endpoint> endpoint;
+    @JsonProperty("endpoint")
+    private List<XPressEndpoint> endpoint;
 
     /**
-     * Get the universally unique identifier.
-     * @return UUID of type String.
+     * Get the universally unique identifier (UUID).
+     * @return A String type.
      */
     @JsonProperty("id")
     public String getId() {
@@ -31,7 +33,7 @@ public class UserInfo implements Serializable {
 
     /**
      * Get the application user name.
-     * @return User name of type String.
+     * @return A String type.
      */
     @JsonProperty("user_name")
     public String getUsername() {
@@ -40,17 +42,17 @@ public class UserInfo implements Serializable {
 
     /**
      * Get the bearer token for API authentication.
-     * @return Token of type String.
+     * @return A String type.
      */
     @JsonProperty("token")
     public String getToken() { return token; }
 
     /**
      * Get all endpoints.
-     * @return A list of endpoint of type List.
+     * @return A list of XPressEndpoint types.
      */
     @JsonProperty("endpoint")
-    public List<Endpoint> getEndpoint() {
+    public List<XPressEndpoint> getEndpoint() {
         return endpoint;
     }
 }

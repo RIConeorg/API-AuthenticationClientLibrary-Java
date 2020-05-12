@@ -1,28 +1,29 @@
-package riconeapi.models.authentication;
+package riconeapi.models.authentication.xpress;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import riconeapi.authentication.Authenticator;
-
 /**
  * @author Andrew Pieniezny <andrew.pieniezny@neric.org>
- * @version 1.3.0
- * @since 5/7/2019
+ * @version 2.0.0
+ * @since 4/6/2019
  */
 @SuppressWarnings("unused")
-public class Endpoint implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-
+public class XPressEndpoint implements Serializable {
+    @JsonProperty("name")
     private String name;
+    @JsonProperty("href")
     private String href;
+    @JsonProperty("provider_id")
     private String providerId;
+    @JsonProperty("token")
     private String token;
+    private static final long serialVersionUID = 1L;
 
     /**
      * Get provider name.
-     * @return Provider name of type String.
+     * @return A String type.
      */
     @JsonProperty("name")
     public String getName() {
@@ -31,7 +32,7 @@ public class Endpoint implements Serializable {
 
     /**
      * Get provider href.
-     * @return Href of type String.
+     * @return A String type.
      */
     @JsonProperty("href")
     public String getHref() {
@@ -40,7 +41,7 @@ public class Endpoint implements Serializable {
 
     /**
      * Get provider id.
-     * @return Provider id of type String.
+     * @return A String type.
      */
     @JsonProperty("provider_id")
     public String getProviderId() {
@@ -48,11 +49,9 @@ public class Endpoint implements Serializable {
     }
 
     /**
-     * Get the bearer token for API authentication.
-     * @return Token of type String.
+     * Get the token for API authentication.
+     * @return A String type.
      */
     @JsonProperty("token")
-    public String getToken() {
-        return Authenticator.getInstance().getToken();
-    }
+    public String getToken() { return token; }
 }
